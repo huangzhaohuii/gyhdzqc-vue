@@ -25,6 +25,9 @@ const user = {
     },
     SET_PERMISSIONS: (state, permissions) => {
       state.permissions = permissions
+    },
+    SET_USERALL: (state, userAll) => {
+      state.userAll = userAll
     }
   },
 
@@ -59,6 +62,7 @@ const user = {
             commit('SET_ROLES', ['ROLE_DEFAULT'])
           }
           commit('SET_NAME', user.userName)
+          commit('SET_USERALL', user)
           commit('SET_AVATAR', avatar)
           resolve(res)
         }).catch(error => {

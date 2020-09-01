@@ -43,6 +43,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/image',
+    component: (resolve) => require(['@/views/image'], resolve),
+    hidden: true
+  },
+  {
     path: '/404',
     component: (resolve) => require(['@/views/error/404'], resolve),
     hidden: true
@@ -121,7 +126,7 @@ export const constantRoutes = [
 ]
 
 export default new Router({
-  mode: 'history', // 去掉url中的#
+  mode: 'hash', // 去掉url中的#
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })

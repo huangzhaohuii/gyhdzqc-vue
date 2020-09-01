@@ -1,56 +1,70 @@
 <template>
+<div class="display-class">
+  <div class="title-class">
+    <img src="@/assets/image/zgjz.png">
+    <span class="text-title">贵阳恒大足球场钢结构项目精细化管理平台</span>
+  </div>
   <div class="login">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
-      <h4 class="title">贵阳恒大足球场钢结构项目精细化管理平台</h4>
-      <el-form-item prop="username">
-        <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
-          <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
-        </el-input>
-      </el-form-item>
-      <el-form-item prop="password">
-        <el-input
-          v-model="loginForm.password"
-          type="password"
-          auto-complete="off"
-          placeholder="密码"
-          @keyup.enter.native="handleLogin"
-        >
-          <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
-        </el-input>
-      </el-form-item>
-      <el-form-item prop="code">
-        <el-input
-          v-model="loginForm.code"
-          auto-complete="off"
-          placeholder="验证码"
-          style="width: 63%"
-          @keyup.enter.native="handleLogin"
-        >
-          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
-        </el-input>
-        <div class="login-code">
-          <img :src="codeUrl" @click="getCode" class="login-code-img"/>
-        </div>
-      </el-form-item>
-      <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">记住密码</el-checkbox>
-      <el-form-item style="width:100%;">
-        <el-button
-          :loading="loading"
-          size="medium"
-          type="primary"
-          style="width:100%;"
-          @click.native.prevent="handleLogin"
-        >
-          <span v-if="!loading">登 录</span>
-          <span v-else>登 录 中...</span>
-        </el-button>
-      </el-form-item>
-    </el-form>
+      <el-row>
+        <el-col :span=14>
+          <el-image :src="require('@/assets/image/side-image.png')" class="image-item"></el-image>
+        </el-col>
+      <el-col :span=10>
+        <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
+          <h4 class="title">用户登陆</h4>
+          <el-form-item prop="username">
+            <el-input v-model="loginForm.username" type="text" auto-complete="off" placeholder="账号">
+              <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
+            </el-input>
+          </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              v-model="loginForm.password"
+              type="password"
+              auto-complete="off"
+              placeholder="密码"
+              @keyup.enter.native="handleLogin"
+            >
+              <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
+            </el-input>
+          </el-form-item>
+          <el-form-item prop="code">
+            <el-input
+              v-model="loginForm.code"
+              auto-complete="off"
+              placeholder="验证码"
+              style="width: 63%"
+              @keyup.enter.native="handleLogin"
+            >
+              <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
+            </el-input>
+            <div class="login-code">
+              <img :src="codeUrl" @click="getCode" class="login-code-img"/>
+            </div>
+          </el-form-item>
+          <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">记住密码</el-checkbox>
+          <el-form-item style="width:100%;">
+            <el-button
+              :loading="loading"
+              size="medium"
+              type="primary"
+              style="width:100%;"
+              @click.native.prevent="handleLogin"
+            >
+              <span v-if="!loading">登 录</span>
+              <span v-else>登 录 中...</span>
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </el-col>
+      </el-row>
+    
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright © 2018-2019 ruoyi.vip All Rights Reserved.</span>
+      <span>Copyright © 2018-2020 China Construction Fifth Bureau All Rights Reserved.</span>
     </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -63,13 +77,14 @@ export default {
   data() {
     return {
       codeUrl: "",
+      sideImage : "../assets/image/bg.png",
       cookiePassword: "",
       loginForm: {
-        username: "admin",
-        password: "admin123",
-        rememberMe: false,
+        username: "",
+        password: "",
+        rememberMe: true,
         code: "",
-        uuid: ""
+        uuid: "",
       },
       loginRules: {
         username: [
@@ -129,7 +144,10 @@ export default {
           this.$store
             .dispatch("Login", this.loginForm)
             .then(() => {
-              this.$router.push({ path: this.redirect || "/" });
+              // this.$router.push({ path: this.redirect || "/image" });
+              this.$router.push({
+                path: 'image'
+              });
             })
             .catch(() => {
               this.loading = false;
@@ -143,13 +161,21 @@ export default {
 </script>
 
 <style rel="stylesheet/scss" lang="scss">
-.login {
+.display-class{
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
-  background-image: url("../assets/image/login-background.jpg");
+  width: 100%;
+}
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("../assets/image/bg.png");
   background-size: cover;
+  height: 82%;
+  width: 100%;
 }
 .title {
   margin: 0px auto 30px auto;
@@ -157,8 +183,28 @@ export default {
   color: #707070;
 }
 
+.text-title {
+  margin: auto auto auto 10px;
+  text-align: center;
+  color: #242222;
+  font-size: 29px;
+  // font-family: "楷体","楷体_GB2312";
+  font-family: "KaiTi";
+  font-weight:bold;
+  letter-spacing:-2px;
+
+}
+
+.title-class {
+   position: absolute;
+   left: 3%;
+   top: 3%;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
 .login-form {
-  border-radius: 6px;
   background: #ffffff;
   width: 400px;
   padding: 25px 25px 5px 25px;
@@ -173,6 +219,10 @@ export default {
     width: 14px;
     margin-left: 2px;
   }
+}
+.image-item{
+  width: 559px;
+  height: 363px;
 }
 .login-tip {
   font-size: 13px;
@@ -190,12 +240,12 @@ export default {
 }
 .el-login-footer {
   height: 40px;
-  line-height: 40px;
+  line-height: 30px;
   position: fixed;
   bottom: 0;
   width: 100%;
   text-align: center;
-  color: #fff;
+  color: rgb(0, 0, 0);
   font-family: Arial;
   font-size: 12px;
   letter-spacing: 1px;

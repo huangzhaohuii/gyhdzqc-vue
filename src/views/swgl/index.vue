@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="管理类型" prop="manageType">
-        <el-select v-model="queryParams.manageType" :disabled="manageDisabled" placeholder="请选择管理类型" clearable size="small">
+        <el-select v-model="queryParams.manageType" :disabled="manageDisabled" placeholder="请选择管理类型" clearable size="small" @clear="claerSection" @change="getQuerySectionDict">
           <el-option
               v-for="dict in deptOptions"
               :key="dict.dictValue"
@@ -12,7 +12,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="工作板块" prop="workSection">
-        <el-select v-model="queryParams.workSection" placeholder="请选择工作板块" clearable  size="small" @change="getQueryDict">
+        <el-select v-model="queryParams.workSection" placeholder="请选择工作板块" clearable  size="small" @clear="claerSection" @change="getQueryLineDict">
             <el-option
               v-for="dict in businessOptions"
               :key="dict.dictValue"
@@ -109,7 +109,7 @@
           v-hasPermi="['system:tasks:export']"
         >导出</el-button>
       </el-col>
-	  <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
+	  <!-- <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar> -->
     </el-row>
 
     <el-table v-loading="loading" :data="tasksList" @selection-change="handleSelectionChange" :row-class-name="tableRowClassName">
@@ -135,14 +135,14 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-delete"
+            icon="el-icon-view"
             @click="handleInfo(scope.row)"
             v-hasPermi="['system:tasks:query']"
           >详情</el-button>
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
+            icon="el-icon-circle-check"
             @click="handleComplete(scope.row)"
             v-if="scope.row.completion == '000702'"
           >确认完成</el-button>
@@ -164,9 +164,9 @@
         <el-row>
           <el-col :span="8">
           <el-form-item label="工作板块" prop="workSection">
-            <el-select v-model="form.workSection" placeholder="请选择工作板块" clearable  size="small" @change="getFormDict">
+            <el-select v-model="form.workSection" placeholder="请选择工作板块" clearable  size="small" @change="getFormDict" @clear="claerFormLine">
               <el-option
-                v-for="dict in businessOptions"
+                v-for="dict in tableBusinessOptions"
                 :key="dict.dictValue"
                 :label="dict.dictLabel"
                 :value="dict.dictValue"
@@ -178,7 +178,7 @@
           <el-form-item label="工作线条" prop="workLine">
             <el-select v-model="form.workLine" placeholder="请选择工作线条" clearable size="small">
               <el-option
-                v-for="dict in lineOptions"
+                v-for="dict in tableLineOptions"
                 :key="dict.dictValue"
                 :label="dict.dictLabel"
                 :value="dict.dictValue"
@@ -202,6 +202,7 @@
         <el-form-item label="计划时间" prop="planTime"> 
             <el-date-picker 
             v-model="form.planTime"
+            @input="testClick"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
@@ -238,14 +239,14 @@
 
 <style>
   .el-table .one-row{
-    background: oldlace
+    background: Seashell
   }
   .el-table .two-row{
-    background:mistyrose
+    background:oldlace
     /* palegoldenrod */
   }
   .el-table .three-row{
-    background:powderblue
+    background:Ivory
     /* palegoldenrod */
   }
   /* .el.table .three-row{
@@ -291,7 +292,13 @@ export default {
       businessOptions: [],
       // 工作线条数据字典
       lineOptions: [],
+      // 工作板块数据字典
+      tableBusinessOptions: [],
+      // 工作线条数据字典
+      tableLineOptions: [],
       manageParam: '',
+      createBy: '',
+      role: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -331,12 +338,13 @@ export default {
     };
   },
   created() {
+    this.createBy = this.$store.state.user.name
+    this.role = this.$store.state.user.roles
     //获取部门数据字典
     this.getDicts("00").then(response => {
       this.deptOptions = response.data;
     });
     var deptId = this.$store.state.user.userAll.deptId;
-    console.log(deptId)
     if(deptId == '200'){
       //商务部门
       this.manageParam = '0003'
@@ -360,21 +368,22 @@ export default {
     }
     this.queryParams.manageType = this.manageParam
     this.getList();
+    //完成情况
     this.getDicts("0007").then(response => {
       this.completionOptions = response.data;
     });
+    //管理类型
     this.getDicts(this.queryParams.manageType).then(response => {
       this.businessOptions = response.data;
     });
+    //重要程度
     this.getDicts("0008").then(response => {
       this.importOptions = response.data;
     });
     
-    
   },
   methods: {
     tableRowClassName({row,rowIndex}){
-      console.log()
         if(row.completion == '000701'){
           return 'three-row';
         }else if(row.completion == '000702'){
@@ -386,6 +395,9 @@ export default {
     /** 查询列表 */
     getList() {
       this.loading = true;
+      if(!this.role.includes('xmgl') && !this.role.includes('admin') && !this.role.includes('gjg')){
+        this.queryParams.createBy = this.createBy
+      }
       listTasks(this.queryParams).then(response => {
         this.tasksList = response.rows;
         this.total = response.total;
@@ -434,6 +446,9 @@ export default {
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
+      this.getDicts(this.manageParam).then(response => {
+        this.tableBusinessOptions = response.data;
+      });
       this.open = true;
       this.isAbled = false
       this.title = "添加工作计划";
@@ -442,10 +457,17 @@ export default {
     handleUpdate(row) {
       this.reset();
       const id = row.id || this.ids
+      this.getDicts(row.manageType).then(response => {
+        this.tableBusinessOptions = response.data;
+      });
+      this.getDicts(row.workSection).then(response => {
+        this.tableLineOptions = response.data;
+      });
       getTasks(id).then(response => {
         this.isAbled = false
         this.form = response.data;
-        this.form.planTime = [response.data.timeBegin,response.data.timeEnd]
+        this.$set(this.form,"planTime", [response.data.timeBegin, response.data.timeEnd]);
+        // this.form.planTime = [response.data.timeBegin,response.data.timeEnd]
         this.open = true;
         this.title = "修改工作计划";
       });
@@ -454,7 +476,6 @@ export default {
     submitForm() {
       this.form.timeBegin = this.form.planTime[0]
       this.form.timeEnd = this.form.planTime[1]
-      this.form.manageType = '0003'
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != null) {
@@ -513,6 +534,13 @@ export default {
       this.reset();
       this.isAbled = true
       const id = row.id || this.ids
+      
+      this.getDicts(row.manageType).then(response => {
+        this.tableBusinessOptions = response.data;
+      });
+      this.getDicts(row.workSection).then(response => {
+        this.tableLineOptions = response.data;
+      });
       getTasks(id).then(response => {
         this.form = response.data;
         this.open = true;
@@ -533,18 +561,63 @@ export default {
           this.download(response.msg);
         }).catch(function() {});
     },
-    getFormDict(){
-      this.getDicts(this.form.workSection).then(response => {
-      this.lineOptions = response.data;
-    });
+    //获取查询工作板块数据字典
+    getQuerySectionDict(){
+      this.queryParams.workSection = ''
+      this.businessOptions = []
+      this.queryParams.workLine = ''
+      this.lineOptions = []
+      if(this.queryParams.manageType){
+        this.getDicts(this.queryParams.manageType).then(response => {
+          this.businessOptions = response.data;
+         });
+      }
     },
-    getQueryDict(){
+    //获取查询工作线条数据字典
+    getQueryLineDict(){
+      this.queryParams.workLine = ''
+      this.lineOptions = []
       if(this.queryParams.workSection){
         this.getDicts(this.queryParams.workSection).then(response => {
           this.lineOptions = response.data;
          });
       }
-    }
+    },
+    //清除事件
+    claerSection(){
+      this.queryParams.workSection = ''
+      this.queryParams.workLine = ''
+      this.lineOptions = []
+    },
+    claerLine(){
+      this.queryParams.workLine = ''
+    },
+    //获取表单数据字典
+    getFormDict(){
+      this.form.workLine = ''
+      this.tableLineOptions = []
+      this.getDicts(this.form.workSection).then(response => {
+      this.tableLineOptions = response.data;
+    });
+    },
+    claerFormLine(){
+      this.form.workLine = ''
+    },
+    testClick(e) {
+      this.$nextTick(() => {
+        if(e==null){
+          console.log('123')
+            this.form.timeBegin='';
+            this.form.timeEnd= '';
+            this.form.planTime = []
+        }else{
+            this.$set(this.form,"planTime", [e[0], e[1]]);
+            this.form.timeBegin = this.form.planTime[0];
+            this.form.timeEnd = this.form.planTime[1]                      
+        }
+
+    });
+    },
   }
 };
 </script>

@@ -9,6 +9,15 @@ export function listTasks(query) {
   })
 }
 
+// 查询未完成列表
+export function undoTasks(query) {
+  return request({
+    url: '/system/tasks/undoList',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询详细
 export function getTasks(id) {
   return request({
@@ -29,8 +38,8 @@ export function addTasks(data) {
 // 修改
 export function updateTasks(data) {
   return request({
-    url: '/system/tasks',
-    method: 'put',
+    url: '/system/tasks/edit',
+    method: 'post',
     data: data
   })
 }
@@ -44,11 +53,20 @@ export function completeTasks(data) {
   })
 }
 
+// 数据分析
+export function analysis(data) {
+  return request({
+    url: '/system/tasks/analysis',
+    method: 'post',
+    data: data
+  })
+}
+
 // 删除
 export function delTasks(id) {
   return request({
     url: '/system/tasks/' + id,
-    method: 'delete'
+    method: 'post'
   })
 }
 
@@ -56,6 +74,14 @@ export function delTasks(id) {
 export function exportTasks(query) {
   return request({
     url: '/system/tasks/export',
+    method: 'get',
+    params: query
+  })
+}
+//获取未完成任务
+export function getUndoTask(query) {
+  return request({
+    url: '/system/tasks/unDoTask',
     method: 'get',
     params: query
   })

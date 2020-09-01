@@ -30,7 +30,7 @@ export function addManage(data) {
 export function updateManage(data) {
   return request({
     url: '/system/manage',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -39,7 +39,7 @@ export function updateManage(data) {
 export function delManage(id) {
   return request({
     url: '/system/manage/' + id,
-    method: 'delete'
+    method: 'post'
   })
 }
 

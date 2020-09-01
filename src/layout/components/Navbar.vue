@@ -5,20 +5,26 @@
     <breadcrumb id="breadcrumb-container" class="breadcrumb-container" />
 
     <div class="right-menu">
-      <template v-if="device!=='mobile'">
-        <search id="header-search" class="right-menu-item" />
+
+      <template >
+        <!-- <message ref="message" @count="loadData"></message> -->
+        <!-- <search id="header-search" class="right-menu-item" />
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
 
         <el-tooltip content="布局大小" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
-        </el-tooltip>
-
+        </el-tooltip> -->
+        <el-badge :value="count" @click="queryInfo" class="badge-class" style="cursor:pointer">
+          <el-tooltip content="待办事项">
+            <i class="el-icon-bell bell-class"  @click="queryInfo"></i>
+          </el-tooltip>
+        </el-badge>
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <svg-icon icon-class="user" class="el-icon-user" />
+            <i class="el-icon-user" @change="11"></i>
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/user/profile">
@@ -36,6 +42,13 @@
   </div>
 </template>
 
+<style>
+.item {
+  margin-top: 10px;
+  margin-right: 40px;
+}
+</style>
+
 <script>
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
@@ -45,6 +58,9 @@ import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
+import Message from '@/components/Message'
+import { listTasks, getTasks, delTasks, addTasks, updateTasks, completeTasks ,exportTasks,getUndoTask } from "@/api/work/tasks";
+
 
 export default {
   components: {
@@ -54,8 +70,20 @@ export default {
     SizeSelect,
     Search,
     RuoYiGit,
-    RuoYiDoc
+    RuoYiDoc,
+    Message
   },
+  data() {
+      return {
+        websock: null,
+        username: null,
+        count: null
+      }
+    },
+    created() {
+      // this.initWebSocket();
+      this.initCount();
+    },
   computed: {
     ...mapGetters([
       'sidebar',
@@ -75,6 +103,15 @@ export default {
     }
   },
   methods: {
+    // loadData(val){
+    //   this.count = val
+    // },
+    // 初始化未完成消息数量
+    initCount(){
+      getUndoTask().then(response => {
+        this.count = response.data
+      });
+    },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
@@ -85,9 +122,17 @@ export default {
         type: 'warning'
       }).then(() => {
         this.$store.dispatch('LogOut').then(() => {
-          location.href = '/index';
+          location.href = './';
         })
       })
+    },
+    queryInfo(){
+      console.log('info')
+      this.$router.push({
+        path: 'message',
+        name: 'Message'
+      });
+      this.count = null
     }
   }
 }
@@ -151,7 +196,7 @@ export default {
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 35px;
 
       .avatar-wrapper {
         margin-top: 5px;
@@ -172,6 +217,41 @@ export default {
           font-size: 12px;
         }
       }
+    } 
+
+    .notice-container {
+        margin-right: 10px;
+
+        .avatar-wrapper {
+        margin-top: 5px;
+        position: relative;
+
+        .user-avatar {
+          cursor: pointer;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+        }
+
+        .el-icon-caret-bottom {
+          cursor: pointer;
+          position: absolute;
+          right: -20px;
+          top: 25px;
+          font-size: 12px;
+        }
+      }
+    }
+    .badge-class{
+      margin-right: 10px;
+      display: inline-block;
+      padding: 0 8px;
+      height: 100%;
+      font-size: 18px;
+      color: #5a5e66;
+      vertical-align: text-bottom;
+      position: relative;
+      top:7px;
     }
   }
 }
